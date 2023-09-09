@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  device_1:
+    image: device-image
+    hostname: "Device1"
+    networks:
+      - custom_network
+  device_2:
+    image: device-image
+    hostname: "Device2"
+    networks:
+      - custom_network
+  device_3:
+    image: device-image
+    hostname: "Device3"
+    networks:
+      - custom_network
+  device_4:
+    image: device-image
+    hostname: "Device4"
+    networks:
+      - custom_network
+
+networks:
+  custom_network:
+    driver: bridge
+
