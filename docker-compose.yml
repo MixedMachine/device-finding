@@ -21,6 +21,11 @@ services:
     hostname: "Device4"
     networks:
       - custom_network
+  device_5:
+    image: device-image
+    hostname: "Device5"
+    networks:
+      - custom_network
 
 networks:
   custom_network:
