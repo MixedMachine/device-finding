@@ -1,4 +1,4 @@
-package main
+package devices
 
 import (
 	"fmt"
@@ -11,6 +11,21 @@ import (
 type DeviceManager struct {
 	activeDevices map[string]*zeroconf.ServiceEntry
 	mutex         sync.Mutex
+}
+
+// NewDeviceManager creates a new DeviceManager
+func NewDeviceManager() *DeviceManager {
+	return &DeviceManager{
+		activeDevices: make(map[string]*zeroconf.ServiceEntry),
+	}
+}
+
+// GetActiveDevices returns a list of active devices
+func (dm *DeviceManager) GetActiveDevices() map[string]*zeroconf.ServiceEntry {
+	dm.mutex.Lock()
+	defer dm.mutex.Unlock()
+
+	return dm.activeDevices
 }
 
 // Add a new device to the list of active devices
@@ -38,4 +53,3 @@ func (dm *DeviceManager) RemoveInactiveDevice(newEntries map[string]*zeroconf.Se
 		}
 	}
 }
-

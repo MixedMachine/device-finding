@@ -1,11 +1,14 @@
-package main
+package communication
 
 import (
+	"github.com/mixedmachine/device-finding/internal/devices"
+	"github.com/mixedmachine/device-finding/internal/utils"
+
 	"fmt"
 	"net"
-	"time"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/grandcat/zeroconf"
 )
@@ -27,7 +30,7 @@ func handleReceivedMessage(self, msg string) {
 	if msgType == "REQ" {
 		switch data {
 		case "metrics":
-			metrics := getDeviceMetrics()
+			metrics := utils.GetDeviceMetrics()
 			conn, err := net.Dial("udp", fmt.Sprintf("%s:4256", deviceIP))
 			defer conn.Close()
 			if err != nil {
@@ -35,7 +38,7 @@ func handleReceivedMessage(self, msg string) {
 				return
 			}
 
-			_, err = conn.Write(buildMessage(self, getIPv4Address(), "RES", metrics))
+			_, err = conn.Write(buildMessage(self, utils.GetIPv4Address(), "RES", metrics))
 			if err != nil {
 				fmt.Println("Failed to write to UDP:", err)
 			}
@@ -46,7 +49,7 @@ func handleReceivedMessage(self, msg string) {
 }
 
 // Listen for devices
-func listenForDevices(self string) {
+func ListenForDevices(self string) {
 	addr := net.UDPAddr{
 		IP:   net.ParseIP("0.0.0.0"),
 		Port: 4256,
@@ -75,11 +78,10 @@ func buildMessage(self, selfIP, msgType, msg string) []byte {
 }
 
 // Get devices metrics
-func getDevicesMetrics(self string, dm *DeviceManager, stop chan struct{}) {
+func GetDevicesMetrics(self string, dm *devices.DeviceManager, stop chan struct{}) {
 	for {
-		dm.mutex.Lock()
 		wg := &sync.WaitGroup{}
-		for _, device := range dm.activeDevices {
+		for _, device := range dm.GetActiveDevices() {
 			wg.Add(1)
 			go func(device *zeroconf.ServiceEntry) {
 				defer wg.Done()
@@ -98,16 +100,14 @@ func getDevicesMetrics(self string, dm *DeviceManager, stop chan struct{}) {
 					return
 				}
 
-				_, err = conn.Write(buildMessage(self, getIPv4Address(), "REQ", "metrics"))
+				_, err = conn.Write(buildMessage(self, utils.GetIPv4Address(), "REQ", "metrics"))
 				if err != nil {
 					fmt.Println("Failed to write to UDP:", err)
 				}
 				conn.Close()
 			}(device)
 		}
-		dm.mutex.Unlock()
 		wg.Wait() // Wait for all goroutines to finish
 		time.Sleep(10 * time.Second)
 	}
 }
-

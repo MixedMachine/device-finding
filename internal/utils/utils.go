@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"net"
@@ -12,7 +12,7 @@ import (
 )
 
 // Get device metrics
-func getDeviceMetrics() string {
+func GetDeviceMetrics() string {
 	var metrics []string
 
 	// Get CPU Usage (over a 1-second interval)
@@ -52,7 +52,7 @@ func getDeviceMetrics() string {
 	return csvMetrics
 }
 
-func getIPv4Address() string {
+func GetIPv4Address() string {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
 		return ""
@@ -69,5 +69,3 @@ func getIPv4Address() string {
 
 	return ""
 }
-
-

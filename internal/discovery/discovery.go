@@ -1,7 +1,8 @@
-package main
+package discovery
 
 import (
 	"context"
+	"github.com/mixedmachine/device-finding/internal/devices"
 	"log"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // Register a new service (device)
-func registerService(service, domain string, stop chan struct{}) {
+func RegisterService(service, domain string, stop chan struct{}) {
 	server, err := zeroconf.Register(
 		service,                     // service instance name
 		"_myudp._udp",               // service type
@@ -27,7 +28,7 @@ func registerService(service, domain string, stop chan struct{}) {
 }
 
 // Discover services (devices)
-func discoverServices(service, domain string, dm *DeviceManager) {
+func DiscoverServices(service, domain string, dm *devices.DeviceManager) {
 	for {
 		resolver, err := zeroconf.NewResolver(nil)
 		if err != nil {
@@ -38,7 +39,7 @@ func discoverServices(service, domain string, dm *DeviceManager) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 
-		go func(results <-chan *zeroconf.ServiceEntry, dm *DeviceManager) {
+		go func(results <-chan *zeroconf.ServiceEntry, dm *devices.DeviceManager) {
 			newEntries := make(map[string]*zeroconf.ServiceEntry)
 			for entry := range results {
 				newEntries[entry.Instance] = entry
@@ -58,4 +59,3 @@ func discoverServices(service, domain string, dm *DeviceManager) {
 		time.Sleep(10 * time.Second)
 	}
 }
-

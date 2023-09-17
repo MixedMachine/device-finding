@@ -1,11 +1,13 @@
 package main
 
 import (
+	"github.com/mixedmachine/device-finding/internal/communication"
+	"github.com/mixedmachine/device-finding/internal/devices"
+	"github.com/mixedmachine/device-finding/internal/discovery"
+
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/grandcat/zeroconf"
 )
 
 func main() {
@@ -14,25 +16,23 @@ func main() {
 
 	fmt.Println("My name is", serviceName)
 
-	deviceManager := &DeviceManager{
-		activeDevices: make(map[string]*zeroconf.ServiceEntry),
-	}
+	deviceManager := devices.NewDeviceManager()
 
 	stop := make(chan struct{})
 
-	go registerService(serviceName, domain, stop)
+	go discovery.RegisterService(serviceName, domain, stop)
 
-	go listenForDevices(serviceName)
+	go communication.ListenForDevices(serviceName)
 
 	time.Sleep(2 * time.Second)
 
-	go discoverServices("_myudp._udp", domain, deviceManager)
+	go discovery.DiscoverServices("_myudp._udp", domain, deviceManager)
 
 	fmt.Println("Observing...")
 
 	time.Sleep(2 * time.Second)
 
-	go getDevicesMetrics(serviceName, deviceManager, stop)
+	go communication.GetDevicesMetrics(serviceName, deviceManager, stop)
 
 	<-stop
 }
